@@ -1,0 +1,124 @@
+import numpy as np
+import scipy.stats as stats
+import VarGamma as vg
+import matplotlib.pyplot as plt
+#import time
+
+class randomBinary(object):
+    """This is my own class that will generate various random binary events.
+    I still need to tweak it a bit to be more realistic, but if we are willing
+    to assume that these markets are not efficient, and rather that they are a
+    reflection of a bunch of people, with low levels of information, who really 
+    just love to gamble on pretty unpredictable events we can maybe draw some
+    interesting conclusions. Fixing the distributions to be more realistic
+    is obviously a good next step, but this will allow me to focus on agents for
+    a bit.
+    """
+    
+    def __init__(self):
+        #self.start = time.clock()
+        self.prices, self.pricesNO = [], []
+        #self.offers, self.offersNO = {}, {}
+        
+        # This tests the offer timing system. I will deprecate it later.
+        #for i in np.arange(1,100,1):
+        #    timestamp = np.int((time.clock()-self.start) * 10**6)
+        #    self.offers[i] = (timestamp,'TestGambler',np.random.randint(-100,100))
+        #    self.offers_no[i] = (timestamp,'TestGambler',0)
+        
+    def genVarGamma_beta(self, alpha, beta, mu, sigma, theta, nu, plot=False):
+        """Generates 100 random variables that are variance gamma distriuted and
+        then filtered through a beta distribution for scaling.
+        
+        ***THIS SEEMS TO WORK***
+        """
+        
+        t = np.arange(0,1,step=.01)
+        self.prices = [np.random.binomial(1,.5)]   
+        
+        signal = vg.rnd(100, mu, sigma, theta, nu)
+        res = stats.betai(alpha, beta, np.abs(signal))
+        
+        for i in res:
+            self.prices.append(i)
+            
+        self.prices = list(reversed(self.prices))
+        self.prices = np.around(self.prices,decimals=2)
+        self.pricesNO = [abs(1-x) for x in self.prices]
+        self.pricesNO = np.around(self.pricesNO,decimals=2)
+        
+        if plot == True:
+            plt.plot(self.prices)
+
+    def genABM_beta(self, alpha, beta, mu, sigma, plot=False):
+        """This function produces a time-series based on Arithmetic Brownian
+        Motion (ABM), filtered through a beta distribution for scaling.
+        
+        ***THIS NEEDS WORK***
+        """
+
+        t = np.arange(0,1,step=.01)
+        self.prices = [np.random.binomial(1,.5)]
+        Wt = np.cumsum(np.random.randn(100))
+        
+        signal = self.prices[0] + ((mu-sigma**2/2)*t + sigma*Wt)
+        res = stats.betai(alpha, beta, abs(signal/max(signal)))
+        
+        for i in res:
+            self.prices.append(i)
+                
+        self.prices = list(reversed(self.prices))
+        self.prices = np.around(self.prices,decimals=2)
+        self.pricesNO = [abs(1-x) for x in self.prices]
+        self.pricesNO = np.around(self.pricesNO,decimals=2)
+    
+        if plot == True:
+            plt.plot(self.prices)
+           
+    def genABM(self, mu, sigma, plot=False):
+        """This function produces a time-series based on Arithmetic Brownian
+        Motion (ABM), filtered through a logit distribution for scaling.
+        
+        ***THIS NEEDS WORK***
+        """
+        
+        t = np.arange(0,1,step=.01)
+        self.prices = [np.random.binomial(1,.5)]
+        Wt = np.cumsum(np.random.randn(100))
+        
+        signal = self.prices[0] + ((mu-sigma**2/2)*t + sigma*Wt)
+        res = [(i-min(signal))/(max(signal)-min(signal)) for i in signal]
+        
+        for i in res:
+            self.prices.append(i)
+
+        self.prices = list(reversed(self.prices))
+        self.prices = np.around(self.prices,decimals=2)
+        self.pricesNO = [abs(1-x) for x in self.prices]
+        self.pricesNO = np.around(self.pricesNO,decimals=2)
+        
+        if plot == True:
+            plt.plot(self.prices)
+            
+    def genGBM(self, alpha, beta, mu, sigma):
+        """This function produces a time-series based on Geometric Brownian
+        Motion (GBM), filtered through a beta distribution for scaling.
+        ***THIS NEEDS WORK***
+        """
+        
+        self.prices = [np.random.binomial(1,.5)]
+        t = np.arange(0,1,step=.01)
+        S0 = np.random.random()
+        Wt = np.cumsum(np.random.randn(100))
+        
+        signal = S0 * np.exp((mu-sigma**2/2)*t + sigma*Wt)
+        res = stats.betai(alpha, beta, abs(signal/max(signal)))
+        
+        for i in res:
+            self.prices.append(i)
+
+        self.prices = list(reversed(self.prices))
+        self.prices = np.around(self.prices,decimals=2)
+        self.pricesNO = [abs(1-x) for x in self.prices]
+        self.pricesNO = np.around(self.pricesNO,decimals=2)
+
