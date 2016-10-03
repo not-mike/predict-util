@@ -10,4 +10,4 @@ Motion, Laplace motion, and/or extensions of these to the Black-Scholes option
 pricing framework. Due to difficulties enforcing boundary conditions, all
 trading is restricted when market prices exceed these limits. Trading occurs
 asyncronously, though modification to allow syncronous or other ordered trades
-should be relatively painless.
+should be trivial..
